@@ -1,0 +1,134 @@
+C:\Users\Ilyasha Erfrian>cd \xampp\mysql
+
+C:\xampp\mysql>cd bin
+
+C:\xampp\mysql\bin>mysql -u root -p
+Enter password:
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 1152
+Server version: 10.4.32-MariaDB mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> USE fullstack
+Database changed
+MariaDB [fullstack]> SELECT pesanan.id, pesanan.tanggal, pesanan.total, pelanggan.kode, pelanggan.nama,
+    ->        kartu.nama AS nama_kartu, kartu.diskon
+    -> FROM pesanan
+    -> INNER JOIN pelanggan ON pesanan.pelanggan_id = pelanggan.id
+    -> INNER JOIN kartu ON pelanggan.kartu_id = kartu.id;
++----+------------+---------+------+--------------------+---------------+--------+
+| id | tanggal    | total   | kode | nama               | nama_kartu    | diskon |
++----+------------+---------+------+--------------------+---------------+--------+
+|  1 | 2015-11-04 | 9720000 | C001 | Agung Sedayu Group | Gold Utama    |   0.05 |
+|  2 | 2015-11-04 |   17500 | C003 | Sekar Mirah        | Gold Utama    |   0.05 |
+|  3 | 2015-11-04 |       0 | C006 | Gayatri Dwi        | Gold Utama    |   0.05 |
+|  4 | 2015-11-04 |       0 | C007 | Dewi Gyat          | Gold Utama    |   0.05 |
+|  5 | 2015-11-04 |       0 | C010 | Cassanndra         | Gold Utama    |   0.05 |
+|  6 | 2015-11-04 |       0 | C002 | Pandan Wangi       | Platinum Jaya |    0.1 |
+|  7 | 2015-11-04 |       0 | C005 | Pradabashu         | Platinum Jaya |    0.1 |
+|  8 | 2015-11-04 |       0 | C004 | Swandaru Geni      | Non Member    |      0 |
+|  9 | 2015-11-04 |       0 | C008 | Andre Haru         | Non Member    |      0 |
+| 10 | 2015-11-04 |       0 | C009 | Ahmad Hasan        | Non Member    |      0 |
+| 11 | 2015-11-04 |   30000 | C009 | Ahmad Hasan        | Non Member    |      0 |
++----+------------+---------+------+--------------------+---------------+--------+
+11 rows in set (0.023 sec)
+
+MariaDB [fullstack]> SELECT pembelian.id, pembelian.tanggal, pembelian.nomor, pembelian.jumlah, pembelian.harga,
+    ->        produk.nama AS nama_produk, vendor.nama AS nama_vendor, vendor.kontak
+    -> FROM pembelian
+    -> INNER JOIN produk ON pembelian.produk_id = produk.id
+    -> INNER JOIN vendor ON pembelian.vendor_id = vendor.id;
++----+------------+-------+--------+---------+-------------------+----------------------+-----------------+
+| id | tanggal    | nomor | jumlah | harga   | nama_produk       | nama_vendor          | kontak          |
++----+------------+-------+--------+---------+-------------------+----------------------+-----------------+
+|  1 | 2019-10-10 | P001  |      2 | 3500000 | Televisi 21 inchs | PT Guna Samudra      | Ali Nurdin      |
+|  2 | 2019-11-20 | P002  |      5 | 5500000 | Televisi 40 inch  | PT Pondok C9         | Putri Ramadhani |
+|  3 | 2019-12-12 | P003  |      5 | 5400000 | Televisi 40 inch  | PT Guna Samudra      | Ali Nurdin      |
+|  4 | 2020-01-20 | P004  |    200 |    1800 | Teh Botol         | CV Jaya Raya Semesta | Dwi Rahayu      |
+|  5 | 2020-01-20 | P005  |    100 |    2300 | Teh Kotak         | CV Jaya Raya Semesta | Dwi Rahayu      |
++----+------------+-------+--------+---------+-------------------+----------------------+-----------------+
+5 rows in set (0.007 sec)
+
+MariaDB [fullstack]> SELECT pesanan.id, pesanan.tanggal, pesanan.total, pelanggan.nama, pelanggan.kode,
+    ->        produk.nama AS nama_produk, jenis_produk.nama AS jenis_produk,
+    ->        pesanan_items.qty, produk.harga_jual
+    -> FROM pesanan
+    -> INNER JOIN pelanggan ON pesanan.pelanggan_id = pelanggan.id
+    -> INNER JOIN pesanan_items ON pesanan.id = pesanan_items.pesanan_id
+    -> INNER JOIN produk ON pesanan_items.produk_id = produk.id
+    -> INNER JOIN jenis_produk ON produk.jenis_produk_id = jenis_produk.id;
++----+------------+---------+--------------------+------+-------------------+--------------+------+------------+
+| id | tanggal    | total   | nama               | kode | nama_produk       | jenis_produk | qty  | harga_jual |
++----+------------+---------+--------------------+------+-------------------+--------------+------+------------+
+|  1 | 2015-11-04 | 9720000 | Agung Sedayu Group | C001 | Televisi 21 inchs | elektroniks  |    1 |   50500000 |
+|  1 | 2015-11-04 | 9720000 | Agung Sedayu Group | C001 | Kulkas 2 pintu    | elektroniks  |    1 |    4680000 |
+|  2 | 2015-11-04 |   17500 | Sekar Mirah        | C003 | Teh Kotak         | minuman      |    5 |       3500 |
+|  3 | 2015-11-04 |       0 | Gayatri Dwi        | C006 | Teh Kotak         | minuman      |   10 |       3500 |
+|  3 | 2015-11-04 |       0 | Gayatri Dwi        | C006 | Televisi 21 inchs | elektroniks  |    1 |   50500000 |
+|  5 | 2015-11-04 |       0 | Cassanndra         | C010 | Teh Kotak         | minuman      |   10 |       3500 |
+|  6 | 2015-11-04 |       0 | Pandan Wangi       | C002 | Teh Kotak         | minuman      |   20 |       3500 |
++----+------------+---------+--------------------+------+-------------------+--------------+------+------------+
+7 rows in set (0.050 sec)
+
+MariaDB [fullstack]> CREATE OR REPLACE VIEW pesanan_pelanggan_kartu AS
+    -> SELECT pesanan.id, pesanan.tanggal, pesanan.total, pelanggan.kode, pelanggan.nama,
+    ->        kartu.nama AS nama_kartu, kartu.diskon
+    -> FROM pesanan
+    -> INNER JOIN pelanggan ON pesanan.pelanggan_id = pelanggan.id
+    -> INNER JOIN kartu ON pelanggan.kartu_id = kartu.id;
+Query OK, 0 rows affected (0.021 sec)
+
+MariaDB [fullstack]> CREATE OR REPLACE VIEW pembelian_produk_vendor AS
+    -> SELECT p.id, p.tanggal, p.nomor, p.jumlah, p.harga,
+    ->        pr.nama AS nama_produk, v.nama AS nama_vendor, v.kontak
+    -> FROM pembelian p
+    -> INNER JOIN produk pr ON p.produk_id = pr.id
+    -> INNER JOIN vendor v ON p.vendor_id = v.id;
+Query OK, 0 rows affected (0.008 sec)
+
+MariaDB [fullstack]> CREATE VIEW pesanan_pelanggan_produk AS
+    -> SELECT pesanan.id, pesanan.tanggal, pesanan.total, pelanggan.nama, pelanggan.kode,
+    ->        produk.nama AS nama_produk, jenis_produk.nama AS jenis_produk,
+    ->        pesanan_items.qty, produk.harga_jual
+    -> FROM pesanan
+    -> INNER JOIN pelanggan ON pesanan.pelanggan_id = pelanggan.id
+    -> INNER JOIN pesanan_items ON pesanan.id = pesanan_items.pesanan_id
+    -> INNER JOIN produk ON pesanan_items.produk_id = produk.id
+    -> INNER JOIN jenis_produk ON produk.jenis_produk_id = jenis_produk.id;
+Query OK, 0 rows affected (0.014 sec)
+
+MariaDB [fullstack]> START TRANSACTION;
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [fullstack]> INSERT INTO produk (nama, stok, kode, jenis_produk_id)
+    -> VALUES ('Produk A', 100, 'P001', 1), ('Produk B', 200, 'P002', 2), ('Produk C', 300, 'P003', 3);
+Query OK, 3 rows affected, 3 warnings (0.008 sec)
+Records: 3  Duplicates: 0  Warnings: 3
+
+MariaDB [fullstack]> UPDATE produk SET stok = stok - 10 WHERE nama = 'Produk A';
+Query OK, 1 row affected (0.009 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+MariaDB [fullstack]> SAVEPOINT sp1;
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [fullstack]> DELETE FROM pembayaran WHERE id = 123;
+Query OK, 0 rows affected (0.009 sec)
+
+MariaDB [fullstack]> ROLLBACK TO sp1;
+Query OK, 0 rows affected (0.005 sec)
+
+MariaDB [fullstack]> UPDATE kartu SET iuran = iuran + 5 WHERE id = 456;
+Query OK, 0 rows affected (0.003 sec)
+Rows matched: 0  Changed: 0  Warnings: 0
+
+MariaDB [fullstack]> COMMIT;
+Query OK, 0 rows affected (0.007 sec)
+
+
+LOCK TABLES READ digunakan ketika kita butuh baca data dari tabel-tabel yang sedang diubah sama transaksi lain. Ini biar data yang kita baca konsisten dan ga berubah selama transaksi kita berlangsung. Misalnya, pas lagi transaksi pembayaran, kita mau liat data pelanggan biar konsisten.
+
+LOCK TABLES WRITE dipake waktu kita mau tulis atau ubah data di tabel dan kita mau pastiin ga ada transaksi lain yang bisa baca atau tulis ke tabel yang sama saat itu juga. Ini biar kita bisa operasi di tabel secara eksklusif sampe transaksi kita selesai. Misalnya, kita mau ubah stok produk atau masukin data baru ke tabel.
