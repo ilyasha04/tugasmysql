@@ -1,0 +1,184 @@
+Microsoft Windows [Version 10.0.19045.4291]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\Ilyasha Erfrian>cd \xampp\mysql
+
+C:\xampp\mysql>cd bin
+
+C:\xampp\mysql\bin>mysql -u root -p
+Enter password:
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 12
+Server version: 10.4.32-MariaDB mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> USE fullstack
+Database changed
+MariaDB [fullstack]> DELIMITER $$
+MariaDB [fullstack]> CREATE PROCEDURE pro_naik_harga(
+    -> IN jenis_produk INT,
+    -> IN persentasi_kenaikan INT)
+    -> BEGIN
+    -> UPDATE produk SET harga_jual = harga_jual + (harga_jual *
+    -> persentasi_kenaikan / 100)
+    -> WHERE jenis_produk_id = jenis_produk;
+    -> END $$
+Query OK, 0 rows affected (0.050 sec)
+
+MariaDB [fullstack]> DELIMITER ;
+MariaDB [fullstack]> CALL pro_naik_harga(1,4);
+Query OK, 13 rows affected (0.104 sec)
+
+MariaDB [fullstack]> DELIMITER $$
+MariaDB [fullstack]> CREATE FUNCTION umur(tgl_lahir DATE)
+    -> RETURNS INT
+    -> BEGIN
+    -> DECLARE umur INT;
+    -> SET umur = YEAR(CURDATE()) - YEAR(tgl_lahir);
+    -> RETURN umur;
+    -> END $$
+ERROR 1304 (42000): FUNCTION umur already exists
+MariaDB [fullstack]> DELIMITER ;
+MariaDB [fullstack]> SELECT nama, umur(tgl_lahir) AS umur FROM pelanggan;
++--------------------+------+
+| nama               | umur |
++--------------------+------+
+| Agung Sedayu Group |   14 |
+| Pandan Wangi       |   74 |
+| Sekar Mirah        |   41 |
+| Swandaru Geni      |   43 |
+| Pradabashu         |   39 |
+| Gayatri Dwi        |   37 |
+| Dewi Gyat          |   36 |
+| Andre Haru         |   34 |
+| Ahmad Hasan        |   32 |
+| Cassanndra         |   34 |
+| Andi Wijaya        |    1 |
+| Ira                |    1 |
++--------------------+------+
+12 rows in set (0.019 sec)
+
+MariaDB [fullstack]> CREATE FUNCTION kategori_harga(harga DOUBLE) RETURNS VARCHAR(20)
+    -> BEGIN
+    ->      DECLARE kategori VARCHAR(20);
+    ->
+    ->      IF harga <= 500000 THEN
+    ->          SET kategori = 'murah';
+    ->      ELSEIF harga <= 3000000 THEN
+    ->          SET kategori = 'sedang';
+    ->      ELSEIF harga <= 10000000 THEN
+    ->          SET kategori = 'mahal';
+    ->      ELSE
+    ->          SET kategori = 'sangat mahal';
+    ->      END IF;
+    ->
+    ->      RETURN kategori;
+    -> END $$
+Query OK, 0 rows affected (0.037 sec)
+
+MariaDB [fullstack]> select kategori_harga(20000000) as kategori;
+    -> ;
+    -> END $$
++--------------+
+| kategori     |
++--------------+
+| sangat mahal |
++--------------+
+1 row in set (0.009 sec)
+
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near ';
+END' at line 1
+MariaDB [fullstack]> DELIMITER ;
+MariaDB [fullstack]> select kategori_harga(20000000) as kategori;
++--------------+
+| kategori     |
++--------------+
+| sangat mahal |
++--------------+
+1 row in set (0.005 sec)
+
+MariaDB [fullstack]> select kategori_harga(4000000) as kategori;
++----------+
+| kategori |
++----------+
+| mahal    |
++----------+
+1 row in set (0.001 sec)
+
+MariaDB [fullstack]> select kategori_harga(10000005) as kategori;
++--------------+
+| kategori     |
++--------------+
+| sangat mahal |
++--------------+
+1 row in set (0.001 sec)
+
+MariaDB [fullstack]> select kategori_harga(50000) as kategori;
++----------+
+| kategori |
++----------+
+| murah    |
++----------+
+1 row in set (0.001 sec)
+
+MariaDB [fullstack]> select kategori_harga(550000) as kategori;
++----------+
+| kategori |
++----------+
+| sedang   |
++----------+
+1 row in set (0.001 sec)
+
+MariaDB [fullstack]> DELIMITER $$
+MariaDB [fullstack]> CREATE TRIGGER cek_pembayaran BEFORE INSERT ON pembayaran
+    -> FOR EACH ROW
+    -> BEGIN
+    ->     DECLARE total_bayar DECIMAL(10, 2);
+    ->     DECLARE total_pesanan DECIMAL(10, 2);
+    ->     SELECT SUM(jumlah) INTO total_bayar FROM pembayaran WHERE pesanan_id = NEW.pesanan_id;
+    ->     SELECT total INTO total_pesanan FROM pesanan WHERE id = NEW.pesanan_id;
+    ->
+    ->     IF total_bayar + NEW.jumlah >= total_pesanan THEN
+    ->         SET NEW.status_pembayaran = 'Lunas';
+    ->     END IF;
+    -> END $$
+Query OK, 0 rows affected (0.037 sec)
+
+MariaDB [fullstack]> DELIMITER ;
+MariaDB [fullstack]> DELIMITER $$
+MariaDB [fullstack]> CREATE PROCEDURE kurangi_stok(IN produk_id INT, IN jumlah_pesanan INT)
+    -> BEGIN
+    ->   DECLARE stok_produk INT;
+    ->
+    ->   -- Dapatkan jumlah stok produk saat ini
+    ->   SELECT stok INTO stok_produk FROM produk WHERE id = produk_id;
+    ->
+    ->   -- Kurangi stok dengan jumlah pesanan
+    ->   SET stok_produk = stok_produk - jumlah_pesanan;
+    ->
+    ->   -- Pastikan stok tidak negatif
+    ->   IF stok_produk < 0 THEN
+    ->     SIGNAL SQLSTATE '45000'
+    ->     SET MESSAGE_TEXT = 'Stok produk tidak mencukupi';
+    ->   END IF;
+    ->
+    ->   -- Update stok produk yang telah dikurangi
+    ->   UPDATE produk SET stok = stok_produk WHERE id = produk_id;
+    -> END $$
+Query OK, 0 rows affected (0.008 sec)
+
+MariaDB [fullstack]> DELIMITER ;
+MariaDB [fullstack]> DELIMITER $$
+MariaDB [fullstack]> CREATE TRIGGER trig_kurangi_stok AFTER INSERT ON pesanan_items
+    -> FOR EACH ROW
+    -> BEGIN
+    ->   -- Memanggil stored procedure kurangi_stok untuk mengurangi stok produk
+    ->   CALL kurangi_stok(NEW.produk_id, NEW.qty);
+    -> END $$
+Query OK, 0 rows affected (0.019 sec)
+
+MariaDB [fullstack]> DELIMITER ;
+MariaDB [fullstack]>
